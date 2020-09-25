@@ -1,6 +1,6 @@
 package comparison
 
 type Cell struct {
-	from int
+	from  int
 	value int
 }

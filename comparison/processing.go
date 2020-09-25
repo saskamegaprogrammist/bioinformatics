@@ -8,9 +8,9 @@ func initializeMatrixInt(array *[][]int, rows int, columns int) error {
 	}
 	*array = make([][]int, 0)
 
-	for i := 0; i < rows; i ++{
+	for i := 0; i < rows; i++ {
 		inner := make([]int, 0)
-		for j := 0; j < columns; j ++{
+		for j := 0; j < columns; j++ {
 			inner = append(inner, 0)
 		}
 		*array = append(*array, inner)
@@ -24,10 +24,10 @@ func initializeMatrixCell(array *[][]Cell, rows int, columns int) error {
 	}
 	*array = make([][]Cell, 0)
 
-	for i := 0; i < rows; i ++{
+	for i := 0; i < rows; i++ {
 		inner := make([]Cell, 0)
-		for j := 0; j < columns; j ++{
-			inner = append(inner, Cell{value:0, from:0})
+		for j := 0; j < columns; j++ {
+			inner = append(inner, Cell{value: 0, from: 0})
 		}
 		*array = append(*array, inner)
 	}

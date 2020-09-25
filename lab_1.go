@@ -9,7 +9,6 @@ import (
 	"strings"
 )
 
-
 var filenameInput string
 var filenameOutput string
 
@@ -77,7 +76,6 @@ func createWriter(flags *flag.FlagSet, writer *bufio.Writer, fileOut *os.File) (
 	}
 	return writer, nil
 }
-
 
 func argsAssign(flags *flag.FlagSet) {
 	flags.Uint64("gap", 0, "gap for distance")

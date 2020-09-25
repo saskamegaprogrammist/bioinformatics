@@ -23,7 +23,7 @@ func getComparisonArguments(flags *flag.FlagSet, gap *int, typeCompare *int) err
 	if typeString != "" {
 		if typeString == "NUC" {
 			*typeCompare = NUC
-		} else if  typeString == "AMINO" {
+		} else if typeString == "AMINO" {
 			*typeCompare = AMINO
 		} else {
 			return fmt.Errorf("wrong type format")
@@ -34,8 +34,7 @@ func getComparisonArguments(flags *flag.FlagSet, gap *int, typeCompare *int) err
 	return nil
 }
 
-
-func max(valueUp int, valueDiagonal int, valueLeft int, ) (int, int) {
+func max(valueUp int, valueDiagonal int, valueLeft int) (int, int) {
 	max := valueDiagonal
 	from := DIAG
 	maxLocal := valueUp
@@ -51,11 +50,10 @@ func max(valueUp int, valueDiagonal int, valueLeft int, ) (int, int) {
 	return max, from
 }
 
-
 func makeAlignmentStrings(table [][]Cell, firstProtein string, secondProtein string, writer *bufio.Writer) error {
 	var alignmentFirst strings.Builder
 	var alignmentSecond strings.Builder
-	for i, j := len(firstProtein), len(secondProtein); j!=0 && i!=0; {
+	for i, j := len(firstProtein), len(secondProtein); j != 0 && i != 0; {
 		from := table[i][j].from
 		if from == UP {
 			alignmentFirst.WriteString(string(firstProtein[i-1]))
@@ -79,7 +77,7 @@ func makeAlignmentStrings(table [][]Cell, firstProtein string, secondProtein str
 	if finalStringFirst == finalStringSecond {
 		return nil
 	}
-	_, err := writer.WriteString( finalStringFirst + "\n")
+	_, err := writer.WriteString(finalStringFirst + "\n")
 	if err != nil {
 		return fmt.Errorf("error writing string")
 	}
@@ -98,14 +96,14 @@ func compareProteins(firstProtein string, secondProtein string, gap int, compari
 	if err != nil {
 		return 0, fmt.Errorf("couldn't initialize matrix")
 	}
-	for i:=0; i<tableRows; i++ {
-		table[i][0] = Cell{value:i*DEFAULT_GAP, from:UP}
+	for i := 0; i < tableRows; i++ {
+		table[i][0] = Cell{value: i * DEFAULT_GAP, from: UP}
 	}
-	for j:=0; j<tableColumns; j++ {
-		table[0][j] = Cell{value:j*DEFAULT_GAP, from:LEFT}
+	for j := 0; j < tableColumns; j++ {
+		table[0][j] = Cell{value: j * DEFAULT_GAP, from: LEFT}
 	}
-	for i:=1; i<tableRows; i++ {
-		for j:=1; j<tableColumns; j++ {
+	for i := 1; i < tableRows; i++ {
+		for j := 1; j < tableColumns; j++ {
 			diagValue := table[i-1][j-1].value
 			if firstProtein[i-1] == secondProtein[j-1] {
 				if comparisonType == NUC {
@@ -132,7 +130,7 @@ func compareProteins(firstProtein string, secondProtein string, gap int, compari
 					diagValue += DEFAULT_MISMATCH
 				}
 			}
-			max, from := max(table[i-1][j].value + gap, diagValue, table[i][j-1].value + gap)
+			max, from := max(table[i-1][j].value+gap, diagValue, table[i][j-1].value+gap)
 			table[i][j].from = from
 			table[i][j].value = max
 		}
@@ -159,8 +157,8 @@ func Comparison(flags *flag.FlagSet, proteinStrings []string, writer *bufio.Writ
 		return fmt.Errorf("couldn't initialize matrix")
 	}
 
-	for i:=0; i < tableSize; i++ {
-		for j:=i; j<tableSize; j++ {
+	for i := 0; i < tableSize; i++ {
+		for j := i; j < tableSize; j++ {
 			score, err := compareProteins(proteinStrings[i], proteinStrings[j], gap, typeCompare, writer)
 			if err != nil {
 				return fmt.Errorf("error comparing proteins")
@@ -169,8 +167,8 @@ func Comparison(flags *flag.FlagSet, proteinStrings []string, writer *bufio.Writ
 		}
 	}
 
-	for i:=0; i < tableSize; i++ {
-		for j:=0; j<tableSize; j++ {
+	for i := 0; i < tableSize; i++ {
+		for j := 0; j < tableSize; j++ {
 			fmt.Printf("%d ", table[i][j])
 		}
 		fmt.Println()
