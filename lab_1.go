@@ -119,9 +119,9 @@ func comparing(flags *flag.FlagSet, proteinStrings []string) error {
 	if err != nil {
 		return err
 	}
-	for _, str := range proteinStrings{
-		fmt.Println(str)
-	}
+	//for _, str := range proteinStrings{
+	//	fmt.Println(str)
+	//}
 	err = comparison.Comparison(flags, proteinStrings, writer)
 	if err != nil {
 		return err
@@ -138,10 +138,12 @@ func main() {
 	err := argsChecker(&flags)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	proteinStrings, err := readFile(filenameInput)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	err = comparing(&flags, proteinStrings)
 	if err != nil {

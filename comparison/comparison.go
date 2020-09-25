@@ -34,37 +34,6 @@ func getComparisonArguments(flags *flag.FlagSet, gap *int, typeCompare *int) err
 	return nil
 }
 
-func initializeMatrixInt(array *[][]int, rows int, columns int) error {
-	if !(rows > 0 && columns > 0) {
-		return fmt.Errorf("invalid matrix sizes")
-	}
-	*array = make([][]int, 0)
-
-	for i := 0; i < rows; i ++{
-		inner := make([]int, 0)
-		for j := 0; j < columns; j ++{
-			inner = append(inner, 0)
-		}
-		*array = append(*array, inner)
-	}
-	return nil
-}
-
-func initializeMatrixCell(array *[][]Cell, rows int, columns int) error {
-	if !(rows > 0 && columns > 0) {
-		return fmt.Errorf("invalid matrix sizes")
-	}
-	*array = make([][]Cell, 0)
-
-	for i := 0; i < rows; i ++{
-		inner := make([]Cell, 0)
-		for j := 0; j < columns; j ++{
-			inner = append(inner, Cell{value:0, from:0})
-		}
-		*array = append(*array, inner)
-	}
-	return nil
-}
 
 func max(valueUp int, valueDiagonal int, valueLeft int, ) (int, int) {
 	max := valueDiagonal
@@ -82,21 +51,6 @@ func max(valueUp int, valueDiagonal int, valueLeft int, ) (int, int) {
 	return max, from
 }
 
-func reverseAlignment(alignment string) string {
-	n := 0
-	rune := make([]rune, len(alignment))
-	for _, r := range alignment {
-		rune[n] = r
-		n++
-	}
-	rune = rune[0:n]
-
-	for i := 0; i < n/2; i++ {
-		rune[i], rune[n-1-i] = rune[n-1-i], rune[i]
-	}
-
-	return string(rune)
-}
 
 func makeAlignmentStrings(table [][]Cell, firstProtein string, secondProtein string, writer *bufio.Writer) error {
 	var alignmentFirst strings.Builder
@@ -120,11 +74,16 @@ func makeAlignmentStrings(table [][]Cell, firstProtein string, secondProtein str
 			return fmt.Errorf("wrong from value")
 		}
 	}
-	_, err := writer.WriteString(reverseAlignment(alignmentFirst.String()) + "\n")
+	finalStringFirst := reverseString(alignmentFirst.String())
+	finalStringSecond := reverseString(alignmentSecond.String())
+	if finalStringFirst == finalStringSecond {
+		return nil
+	}
+	_, err := writer.WriteString( finalStringFirst + "\n")
 	if err != nil {
 		return fmt.Errorf("error writing string")
 	}
-	_, err = writer.WriteString(reverseAlignment(alignmentSecond.String()) + "\n")
+	_, err = writer.WriteString(finalStringSecond + "\n\n\n")
 	if err != nil {
 		return fmt.Errorf("error writing string")
 	}
@@ -201,8 +160,7 @@ func Comparison(flags *flag.FlagSet, proteinStrings []string, writer *bufio.Writ
 	}
 
 	for i:=0; i < tableSize; i++ {
-		table[i][i]=1
-		for j:=i+1; j<tableSize; j++ {
+		for j:=i; j<tableSize; j++ {
 			score, err := compareProteins(proteinStrings[i], proteinStrings[j], gap, typeCompare, writer)
 			if err != nil {
 				return fmt.Errorf("error comparing proteins")
