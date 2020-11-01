@@ -36,16 +36,16 @@ func initializeMatrixCell(array *[][]Cell, rows int, columns int) error {
 
 func reverseString(alignment string) string {
 	n := 0
-	rune := make([]rune, len(alignment))
+	stringToRune := make([]rune, len(alignment))
 	for _, r := range alignment {
-		rune[n] = r
+		stringToRune[n] = r
 		n++
 	}
-	rune = rune[0:n]
+	stringToRune = stringToRune[0:n]
 
 	for i := 0; i < n/2; i++ {
-		rune[i], rune[n-1-i] = rune[n-1-i], rune[i]
+		stringToRune[i], stringToRune[n-1-i] = stringToRune[n-1-i], stringToRune[i]
 	}
 
-	return string(rune)
+	return string(stringToRune)
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/saskamegaprogrammist/bioinformatics/comparison"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,19 +13,19 @@ func Test_Compare_Simple_1(t *testing.T) {
 	os.Args[1] = `-i=testFiles/prot_1.txt`
 	os.Args[2] = `-o=testFiles/out_1.txt`
 	var flags flag.FlagSet
-	err := argsChecker(&flags)
+	filename, filenameOut, err := comparison.ArgsChecker(&flags)
 	if err != nil {
 		t.Errorf("Test_Compare_Simple_1 failed: %s", err)
 	} else {
-		proteinStrings, err := readFile(filenameInput)
+		proteinStrings, err := comparison.ReadFile(filename)
 		if err != nil {
 			t.Errorf("Test_Compare_Simple_1 failed: %s", err)
 		} else {
-			err = comparing(&flags, proteinStrings)
+			err = comparison.Comparing(&flags, proteinStrings, true)
 			if err != nil {
 				t.Errorf("Test_Compare_Simple_1 failed: %s", err)
 			} else {
-				outData, err := ioutil.ReadFile(filenameOutput)
+				outData, err := ioutil.ReadFile(filenameOut)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -44,15 +45,15 @@ func Test_Compare_Simple_2(t *testing.T) {
 	os.Args[1] = `-i=testFiles/prot_2.txt`
 	os.Args[2] = `-o=testFiles/out_2.txt`
 	var flags flag.FlagSet
-	err := argsChecker(&flags)
+	filename, _, err := comparison.ArgsChecker(&flags)
 	if err != nil {
 		t.Errorf("Test_Compare_Simple_2 failed: %s", err)
 	} else {
-		proteinStrings, err := readFile(filenameInput)
+		proteinStrings, err := comparison.ReadFile(filename)
 		if err != nil {
 			t.Errorf("Test_Compare_Simple_2 failed: %s", err)
 		} else {
-			err = comparing(&flags, proteinStrings)
+			err = comparison.Comparing(&flags, proteinStrings, true)
 			if err != nil {
 				t.Errorf("Test_Compare_Simple_2 failed: %s", err)
 			} else {
@@ -76,19 +77,19 @@ func Test_Compare_Simple_3(t *testing.T) {
 	os.Args[1] = `-i=testFiles/dna_1.txt`
 	os.Args[2] = `-o=testFiles/out_3.txt`
 	var flags flag.FlagSet
-	err := argsChecker(&flags)
+	filename, filenameOut, err := comparison.ArgsChecker(&flags)
 	if err != nil {
 		t.Errorf("Test_Compare_Simple_3 failed: %s", err)
 	} else {
-		proteinStrings, err := readFile(filenameInput)
+		proteinStrings, err := comparison.ReadFile(filename)
 		if err != nil {
 			t.Errorf("Test_Compare_Simple_3 failed: %s", err)
 		} else {
-			err = comparing(&flags, proteinStrings)
+			err = comparison.Comparing(&flags, proteinStrings, true)
 			if err != nil {
 				t.Errorf("Test_Compare_Simple_3 failed: %s", err)
 			} else {
-				outData, err := ioutil.ReadFile(filenameOutput)
+				outData, err := ioutil.ReadFile(filenameOut)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -109,19 +110,19 @@ func Test_Compare_Blosum_2(t *testing.T) {
 	os.Args[2] = `-o=testFiles/out_2_blosum.txt`
 	os.Args[3] = `-type=AMINO`
 	var flags flag.FlagSet
-	err := argsChecker(&flags)
+	filename, filenameOut, err := comparison.ArgsChecker(&flags)
 	if err != nil {
 		t.Errorf("Test_Compare_Blosum_2 failed: %s", err)
 	} else {
-		proteinStrings, err := readFile(filenameInput)
+		proteinStrings, err := comparison.ReadFile(filename)
 		if err != nil {
 			t.Errorf("Test_Compare_Blosum_2 failed: %s", err)
 		} else {
-			err = comparing(&flags, proteinStrings)
+			err = comparison.Comparing(&flags, proteinStrings, true)
 			if err != nil {
 				t.Errorf("Test_Compare_Blosum_2 failed: %s", err)
 			} else {
-				outData, err := ioutil.ReadFile(filenameOutput)
+				outData, err := ioutil.ReadFile(filenameOut)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -142,19 +143,19 @@ func Test_Compare_DNA_3(t *testing.T) {
 	os.Args[2] = `-o=testFiles/out_3_dna.txt`
 	os.Args[3] = `-type=NUC`
 	var flags flag.FlagSet
-	err := argsChecker(&flags)
+	filename, filenameOut, err := comparison.ArgsChecker(&flags)
 	if err != nil {
 		t.Errorf("Test_Compare_Simple_3 failed: %s", err)
 	} else {
-		proteinStrings, err := readFile(filenameInput)
+		proteinStrings, err := comparison.ReadFile(filename)
 		if err != nil {
 			t.Errorf("Test_Compare_Simple_3 failed: %s", err)
 		} else {
-			err = comparing(&flags, proteinStrings)
+			err = comparison.Comparing(&flags, proteinStrings, true)
 			if err != nil {
 				t.Errorf("Test_Compare_Simple_3 failed: %s", err)
 			} else {
-				outData, err := ioutil.ReadFile(filenameOutput)
+				outData, err := ioutil.ReadFile(filenameOut)
 				if err != nil {
 					log.Fatal(err)
 				}

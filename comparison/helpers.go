@@ -1,18 +1,15 @@
-package main
+package comparison
 
 import (
 	"bufio"
 	"flag"
 	"fmt"
-	"github.com/saskamegaprogrammist/bioinformatics/comparison"
 	"os"
 	"strings"
 )
 
-var filenameInput string
-var filenameOutput string
 
-func readFile(filename string) ([]string, error) {
+func ReadFile(filename string) ([]string, error) {
 	var proteinStrings []string
 	_, err := os.Stat(filename)
 	if err != nil {
@@ -84,32 +81,34 @@ func argsAssign(flags *flag.FlagSet) {
 	flags.String("type", "", "type of proteins")
 }
 
-func argsChecker(flags *flag.FlagSet) error {
+func ArgsChecker(flags *flag.FlagSet) (string, string, error) {
 
 	argsAssign(flags)
+ 	var filenameInput string
+	var filenameOutput string
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
-		return fmt.Errorf("flag input error")
+		return filenameInput,  filenameOutput, fmt.Errorf("flag input error")
 	}
 	filenameInput = flags.Lookup("i").Value.String()
 	if filenameInput == flags.Lookup("i").DefValue {
-		return fmt.Errorf("enter input file name")
+		return filenameInput, filenameOutput, fmt.Errorf("enter input file name")
 	} else {
 		if !strings.Contains(filenameInput, ".txt") &&
 			!strings.Contains(filenameInput, ".fasta") {
-			return fmt.Errorf("wrong input file format")
+			return filenameInput, filenameOutput, fmt.Errorf("wrong input file format")
 		}
 	}
 	filenameOutput = flags.Lookup("o").Value.String()
 	if filenameOutput != flags.Lookup("o").DefValue &&
 		!strings.Contains(filenameOutput, ".txt") {
-		return fmt.Errorf("wrong output file format")
+		return filenameInput, filenameOutput,  fmt.Errorf("wrong output file format")
 	}
-	return nil
+	return filenameInput, filenameOutput, nil
 }
 
-func comparing(flags *flag.FlagSet, proteinStrings []string) error {
+func Comparing(flags *flag.FlagSet, proteinStrings []string, score bool) error {
 	var writer *bufio.Writer
 	var fileOut *os.File
 	defer fileOut.Close()
@@ -120,31 +119,21 @@ func comparing(flags *flag.FlagSet, proteinStrings []string) error {
 	//for _, str := range proteinStrings{
 	//	fmt.Println(str)
 	//}
-	err = comparison.Comparison(flags, proteinStrings, writer)
-	if err != nil {
-		return err
+	if score {
+		err = Comparison(flags, proteinStrings, writer)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = ComparisonNoScore(flags, proteinStrings, writer)
+		if err != nil {
+			return err
+		}
 	}
+
 	err = writer.Flush()
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-func main() {
-	var flags flag.FlagSet
-	err := argsChecker(&flags)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	proteinStrings, err := readFile(filenameInput)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	err = comparing(&flags, proteinStrings)
-	if err != nil {
-		fmt.Println(err)
-	}
 }
