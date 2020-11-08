@@ -6,11 +6,9 @@ import (
 	"github.com/saskamegaprogrammist/bioinformatics/comparison"
 )
 
-
-
 func main() {
 	var flags flag.FlagSet
-	filenameInput, _, err := comparison.ArgsChecker(&flags)
+	filenameInput, _, emboss, err := comparison.ArgsChecker(&flags)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -20,7 +18,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	err = comparison.Comparing(&flags, proteinStrings, false)
+	err = comparison.Comparing(&flags, proteinStrings, true, emboss)
 	if err != nil {
 		fmt.Println(err)
 	}

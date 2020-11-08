@@ -1,0 +1,4 @@
+>seq1 length 7
+ACGGCTT
+>seq2 length 4
+ACGT

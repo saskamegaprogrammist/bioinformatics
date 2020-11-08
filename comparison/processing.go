@@ -34,6 +34,26 @@ func initializeMatrixCell(array *[][]Cell, rows int, columns int) error {
 	return nil
 }
 
+func initializeMatrixCellEmboss(array *[][]CellEmboss, rows int, columns int) error {
+	if !(rows > 0 && columns > 0) {
+		return fmt.Errorf("invalid matrix sizes")
+	}
+	*array = make([][]CellEmboss, 0)
+
+	for i := 0; i < rows; i++ {
+		inner := make([]CellEmboss, 0)
+		for j := 0; j < columns; j++ {
+			inner = append(inner, CellEmboss{
+				valueM: 0,
+				valueI: 0,
+				valueD: 0,
+			})
+		}
+		*array = append(*array, inner)
+	}
+	return nil
+}
+
 func reverseString(alignment string) string {
 	n := 0
 	stringToRune := make([]rune, len(alignment))

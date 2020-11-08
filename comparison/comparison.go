@@ -8,30 +8,36 @@ import (
 	"strings"
 )
 
-func getComparisonArguments(flags *flag.FlagSet, gap *int, typeCompare *int) error {
-	var err error
-	gapString := flags.Lookup("gap").Value.String()
-	if gapString != "0" {
-		*gap, err = strconv.Atoi(gapString)
-		if err != nil {
-			return fmt.Errorf("wrong gap format")
-		}
-	} else {
-		*gap = DEFAULT_GAP
-	}
+func getProteinsType(flags *flag.FlagSet) (int, error) {
+	var typeCompare int
 	typeString := flags.Lookup("type").Value.String()
 	if typeString != "" {
 		if typeString == "NUC" {
-			*typeCompare = NUC
+			typeCompare = NUC
 		} else if typeString == "AMINO" {
-			*typeCompare = AMINO
+			typeCompare = AMINO
 		} else {
-			return fmt.Errorf("wrong type format")
+			return typeCompare, fmt.Errorf("wrong type format")
 		}
 	} else {
-		*typeCompare = DEFAULT
+		typeCompare = DEFAULT
 	}
-	return nil
+	return typeCompare, nil
+}
+
+func getGapValueSimple(flags *flag.FlagSet) (int, error) {
+	var err error
+	var gap int
+	gapString := flags.Lookup("gap").Value.String()
+	if gapString != "0" {
+		gap, err = strconv.Atoi(gapString)
+		if err != nil {
+			return gap, fmt.Errorf("wrong gap format")
+		}
+	} else {
+		gap = DEFAULT_GAP
+	}
+	return gap, nil
 }
 
 func max(valueUp int, valueDiagonal int, valueLeft int) (int, int) {
@@ -70,7 +76,7 @@ func makeAlignmentStrings(table [][]Cell, firstProtein string, secondProtein str
 	var alignmentSecond strings.Builder
 	var err error
 	i, j := len(firstProtein), len(secondProtein)
-	for ; j != 0 && i != 0; {
+	for j != 0 && i != 0 {
 		from := table[i][j].from
 		if from == UP {
 			alignmentFirst.WriteString(string(firstProtein[i-1]))
@@ -105,6 +111,36 @@ func makeAlignmentStrings(table [][]Cell, firstProtein string, secondProtein str
 	return finalStringFirst, finalStringSecond, err
 }
 
+func getScore(firstLetter byte, secondLetter byte, comparisonType int) (int, error) {
+	var score int
+	if firstLetter == secondLetter {
+		if comparisonType == NUC {
+			score = DNAFULL_MATCH
+		} else if comparisonType == AMINO {
+			aminoValue, err := CompareAminoLetter(string(firstLetter))
+			if err != nil {
+				return score, err
+			}
+			score = aminoValue
+		} else {
+			score = DEFAULT_MATCH
+		}
+	} else {
+		if comparisonType == NUC {
+			score = DNAFULL_MISMATCH
+		} else if comparisonType == AMINO {
+			aminoValue, err := CompareAminoLetters(string(firstLetter), string(secondLetter))
+			if err != nil {
+				return score, err
+			}
+			score = aminoValue
+		} else {
+			score = DEFAULT_MISMATCH
+		}
+	}
+	return score, nil
+}
+
 func NW(firstProtein string, secondProtein string, gap int, comparisonType int) (int, string, string, error) {
 	var table [][]Cell
 	var firstAligned string
@@ -123,33 +159,11 @@ func NW(firstProtein string, secondProtein string, gap int, comparisonType int) 
 	}
 	for i := 1; i < tableRows; i++ {
 		for j := 1; j < tableColumns; j++ {
-			diagValue := table[i-1][j-1].value
-			if firstProtein[i-1] == secondProtein[j-1] {
-				if comparisonType == NUC {
-					diagValue += DNAFULL_MATCH
-				} else if comparisonType == AMINO {
-					aminoValue, err := CompareAminoLetter(string(firstProtein[i-1]))
-					if err != nil {
-						return 0, firstAligned, secondAligned, err
-					}
-					diagValue += aminoValue
-				} else {
-					diagValue += DEFAULT_MATCH
-				}
-			} else {
-				if comparisonType == NUC {
-					diagValue += DNAFULL_MISMATCH
-				} else if comparisonType == AMINO {
-					aminoValue, err := CompareAminoLetters(string(firstProtein[i-1]), string(secondProtein[j-1]))
-					if err != nil {
-						return 0, firstAligned, secondAligned, err
-					}
-					diagValue += aminoValue
-				} else {
-					diagValue += DEFAULT_MISMATCH
-				}
+			score, err := getScore(firstProtein[i-1], secondProtein[j-1], comparisonType)
+			if err != nil {
+				return 0, firstAligned, secondAligned, err
 			}
-			max, from := max(table[i-1][j].value+gap, diagValue, table[i][j-1].value+gap)
+			max, from := max(table[i-1][j].value+gap, table[i-1][j-1].value+score, table[i][j-1].value+gap)
 			table[i][j].from = from
 			table[i][j].value = max
 		}
@@ -178,11 +192,12 @@ func compareProteinsNWNoScore(firstProtein string, secondProtein string, gap int
 	return writeAlignmentStringsToWriter(firstAligned, secondAligned, writer)
 }
 
-
 func Comparison(flags *flag.FlagSet, proteinStrings []string, writer *bufio.Writer) error {
-	var gap int
-	var typeCompare int
-	err := getComparisonArguments(flags, &gap, &typeCompare)
+	gap, err := getGapValueSimple(flags)
+	if err != nil {
+		return err
+	}
+	typeCompare, err := getProteinsType(flags)
 	if err != nil {
 		return err
 	}
@@ -215,13 +230,14 @@ func Comparison(flags *flag.FlagSet, proteinStrings []string, writer *bufio.Writ
 }
 
 func ComparisonNoScore(flags *flag.FlagSet, proteinStrings []string, writer *bufio.Writer) error {
-	var gap int
-	var typeCompare int
-	err := getComparisonArguments(flags, &gap, &typeCompare)
+	gap, err := getGapValueSimple(flags)
 	if err != nil {
 		return err
 	}
-
+	typeCompare, err := getProteinsType(flags)
+	if err != nil {
+		return err
+	}
 	proteinsSize := len(proteinStrings)
 
 	_, err = writer.WriteString("alignment with Needleman-Wunsch" + "\n")
@@ -231,10 +247,10 @@ func ComparisonNoScore(flags *flag.FlagSet, proteinStrings []string, writer *buf
 
 	for i := 0; i < proteinsSize; i++ {
 		for j := i; j < proteinsSize; j++ {
-				err := compareProteinsNWNoScore(proteinStrings[i], proteinStrings[j], gap, typeCompare, writer)
-				if err != nil {
-					return fmt.Errorf("error comparing proteins")
-				}
+			err := compareProteinsNWNoScore(proteinStrings[i], proteinStrings[j], gap, typeCompare, writer)
+			if err != nil {
+				return fmt.Errorf("error comparing proteins")
+			}
 		}
 	}
 

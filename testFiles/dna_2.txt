@@ -1,4 +1,0 @@
->seq1 length 5
-AATGGTA
->seq2 length 4
-AATTTA

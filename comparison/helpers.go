@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 func ReadFile(filename string) ([]string, error) {
 	var proteinStrings []string
 	_, err := os.Stat(filename)
@@ -75,40 +74,46 @@ func createWriter(flags *flag.FlagSet, writer *bufio.Writer, fileOut *os.File) (
 }
 
 func argsAssign(flags *flag.FlagSet) {
-	flags.Uint64("gap", 0, "gap for distance")
+	flags.Int64("gap", 0, "gap for distance")
+	flags.Int64("gap_open", 0, "gap opening for distance")
+	flags.Int64("gap_ext", 0, "gap extension for distance")
+	flags.Bool("emboss", false, "use emboss algorithm")
 	flags.String("o", "", "output file")
 	flags.String("i", "", "input file")
 	flags.String("type", "", "type of proteins")
 }
 
-func ArgsChecker(flags *flag.FlagSet) (string, string, error) {
-
+func ArgsChecker(flags *flag.FlagSet) (string, string, bool, error) {
 	argsAssign(flags)
- 	var filenameInput string
+	var filenameInput string
 	var filenameOutput string
+	var embossBool bool
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
-		return filenameInput,  filenameOutput, fmt.Errorf("flag input error")
+		return filenameInput, filenameOutput, embossBool, fmt.Errorf("flag input error")
 	}
 	filenameInput = flags.Lookup("i").Value.String()
 	if filenameInput == flags.Lookup("i").DefValue {
-		return filenameInput, filenameOutput, fmt.Errorf("enter input file name")
+		return filenameInput, filenameOutput, embossBool, fmt.Errorf("enter input file name")
 	} else {
 		if !strings.Contains(filenameInput, ".txt") &&
 			!strings.Contains(filenameInput, ".fasta") {
-			return filenameInput, filenameOutput, fmt.Errorf("wrong input file format")
+			return filenameInput, filenameOutput, embossBool, fmt.Errorf("wrong input file format")
 		}
 	}
 	filenameOutput = flags.Lookup("o").Value.String()
 	if filenameOutput != flags.Lookup("o").DefValue &&
 		!strings.Contains(filenameOutput, ".txt") {
-		return filenameInput, filenameOutput,  fmt.Errorf("wrong output file format")
+		return filenameInput, filenameOutput, embossBool, fmt.Errorf("wrong output file format")
 	}
-	return filenameInput, filenameOutput, nil
+	if flags.Lookup("emboss").Value.String() == "true" {
+		embossBool = true
+	}
+	return filenameInput, filenameOutput, embossBool, nil
 }
 
-func Comparing(flags *flag.FlagSet, proteinStrings []string, score bool) error {
+func Comparing(flags *flag.FlagSet, proteinStrings []string, score bool, emboss bool) error {
 	var writer *bufio.Writer
 	var fileOut *os.File
 	defer fileOut.Close()
@@ -120,10 +125,18 @@ func Comparing(flags *flag.FlagSet, proteinStrings []string, score bool) error {
 	//	fmt.Println(str)
 	//}
 	if score {
-		err = Comparison(flags, proteinStrings, writer)
-		if err != nil {
-			return err
+		if emboss {
+			err = ComparisonEmboss(flags, proteinStrings, writer)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = Comparison(flags, proteinStrings, writer)
+			if err != nil {
+				return err
+			}
 		}
+
 	} else {
 		err = ComparisonNoScore(flags, proteinStrings, writer)
 		if err != nil {

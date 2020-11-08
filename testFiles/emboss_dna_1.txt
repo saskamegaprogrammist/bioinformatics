@@ -1,0 +1,4 @@
+>seq1 length 2
+AT
+>seq2 length 1
+G

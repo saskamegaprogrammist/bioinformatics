@@ -18,38 +18,16 @@ func optimisedScore(firstProtein string, secondProtein string, gap int, comparis
 		table[0][j] = j * gap
 	}
 	for i := 1; i < len(firstProtein)+1; i++ {
-		table[1][0] =table[0][0]+gap
+		table[1][0] = table[0][0] + gap
 		for j := 1; j < tableColumns; j++ {
-			diagValue := table[0][j-1]
-			if firstProtein[i-1] == secondProtein[j-1] {
-				if comparisonType == NUC {
-					diagValue += DNAFULL_MATCH
-				} else if comparisonType == AMINO {
-					aminoValue, err := CompareAminoLetter(string(firstProtein[i-1]))
-					if err != nil {
-						return table[1], err
-					}
-					diagValue += aminoValue
-				} else {
-					diagValue += DEFAULT_MATCH
-				}
-			} else {
-				if comparisonType == NUC {
-					diagValue += DNAFULL_MISMATCH
-				} else if comparisonType == AMINO {
-					aminoValue, err := CompareAminoLetters(string(firstProtein[i-1]), string(secondProtein[j-1]))
-					if err != nil {
-						return table[1], err
-					}
-					diagValue += aminoValue
-				} else {
-					diagValue += DEFAULT_MISMATCH
-				}
+			score, err := getScore(firstProtein[i-1], secondProtein[j-1], comparisonType)
+			if err != nil {
+				return table[1], err
 			}
-			max, _ := max(table[0][j] + gap, diagValue, table[1][j-1]+gap)
+			max, _ := max(table[0][j]+gap, table[0][j-1]+score, table[1][j-1]+gap)
 			table[1][j] = max
 		}
-		for j:=0; j<tableColumns; j++ {
+		for j := 0; j < tableColumns; j++ {
 			table[0][j] = table[1][j]
 		}
 	}
@@ -60,7 +38,7 @@ func getSplitIndex(firstScore []int, secondScore []int) int {
 	length := len(firstScore)
 	max := firstScore[0] + secondScore[length-1]
 	var maxIndex int
-	for i:=1; i<length; i++ {
+	for i := 1; i < length; i++ {
 		scoreLocal := firstScore[i] + secondScore[length-i-1]
 		if scoreLocal > max {
 			max = scoreLocal
@@ -78,13 +56,13 @@ func Hirshberg(firstProtein string, secondProtein string, gap int, comparisonTyp
 	firstLength := len(firstProtein)
 	secondLength := len(secondProtein)
 	if firstLength == 0 {
-		for i:=0; i < secondLength; i++ {
+		for i := 0; i < secondLength; i++ {
 			alignmentFirst.WriteString("_")
 			alignmentSecond.WriteString(string(secondProtein[i]))
 		}
 		return alignmentFirst.String(), alignmentSecond.String()
 	} else if secondLength == 0 {
-		for i:=0; i < firstLength; i++ {
+		for i := 0; i < firstLength; i++ {
 			alignmentFirst.WriteString(string(firstProtein[i]))
 			alignmentSecond.WriteString("_")
 		}
@@ -96,7 +74,7 @@ func Hirshberg(firstProtein string, secondProtein string, gap int, comparisonTyp
 		}
 		return firstAligned, secondAligned
 	} else {
-		firstMiddle := firstLength/2
+		firstMiddle := firstLength / 2
 		firstHalfFirst := firstProtein[0:firstMiddle]
 		secondHalfFirst := firstProtein[firstMiddle:firstLength]
 		scoreFirst, err := optimisedScore(firstHalfFirst, secondProtein, gap, comparisonType)

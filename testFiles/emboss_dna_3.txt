@@ -1,0 +1,4 @@
+>seq1 length 10
+AATTTGTACG
+>seq2 length 6
+AATGAC

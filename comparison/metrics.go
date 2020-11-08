@@ -17,12 +17,21 @@ const (
 	DIAG = iota
 )
 
+const (
+	M = iota
+	I = iota
+	D = iota
+)
+
 const DNAFULL_MATCH = 5
 const DNAFULL_MISMATCH = -4
 
 const DEFAULT_MATCH = 1
 const DEFAULT_MISMATCH = -1
 const DEFAULT_GAP = -2
+
+const DEFAULT_GAP_OPEN = -10
+const DEFAULT_GAP_EXTEND = -1
 
 var blosumMap = map[string]int{"A": 1, "R": 2, "N": 3, "D": 4, "C": 5, "Q": 6,
 	"E": 7, "G": 8, "H": 9, "I": 10, "L": 11, "K": 12,
